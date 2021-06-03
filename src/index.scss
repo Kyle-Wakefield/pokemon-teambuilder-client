@@ -4,6 +4,7 @@ $danger: #f70602;
 @import '~bootstrap/scss/bootstrap';
 
 $black: #000;
+$sky-blue: #00b9f6;
 
 .primary-background {
   background-color: $primary;
@@ -25,4 +26,12 @@ $black: #000;
 
 .border-std-b {
   border-bottom: 5px solid $black;
+}
+
+.background-sky-blue {
+  background-color: $sky-blue;
+}
+
+.background-primary {
+  background-color: $primary;
 }

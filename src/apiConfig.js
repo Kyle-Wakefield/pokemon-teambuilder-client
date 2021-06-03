@@ -10,4 +10,9 @@ if (window.location.hostname === 'localhost') {
   apiUrl = apiUrls.production
 }
 
-export default apiUrl
+const pokeApiUrl = 'https://pokeapi.co/api/v2'
+
+export {
+  apiUrl,
+  pokeApiUrl
+}

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-// import { Redirect } from 'react-router-dom'
+import { Redirect } from 'react-router-dom'
 
 import Button from 'react-bootstrap/Button'
 
@@ -10,33 +10,31 @@ class TeamPreview extends Component {
     super(props)
 
     this.state = {
-      team: this.props.team
+      team: this.props.team,
+      redirect: null
     }
   }
 
   onDelete = () => {
-    console.log('onDelete', this.props)
     const { user, team } = this.props
-    console.log('onDelete', `user: ${user}`, `team: ${team}`)
     deleteTeam(user, team)
       .then(() => this.setState({ team: null }))
       .catch(console.error)
   }
 
+  onEdit = () => {
+    this.setState({ redirect: <Redirect to={'/teams/' + this.state.team._id} /> })
+  }
+
   render () {
-    const { team } = this.state
+    const { team, redirect } = this.state
+
+    if (redirect) {
+      return redirect
+    }
+
     if (!team) {
       return null
-      // return (
-      //   <div className="row justify-content-center p-2 border-std-x border-std-b">
-      //     <Button
-      //       variant="secondary"
-      //       onClick={this.onCreate}
-      //     >
-      //       New Team
-      //     </Button>
-      //   </div>
-      // )
     }
 
     return (
@@ -51,7 +49,7 @@ class TeamPreview extends Component {
           <Button
             className="mr-1"
             variant="secondary"
-            // onClick={edit}
+            onClick={this.onEdit}
           >
             View/Edit Team
           </Button>
