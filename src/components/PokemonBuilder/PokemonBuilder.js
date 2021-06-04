@@ -1,9 +1,12 @@
-import React, { Component, Fragment } from 'react'
+import React, { Component } from 'react'
 import { withRouter } from 'react-router'
 import { Redirect } from 'react-router-dom'
 // import Button from 'react-bootstrap/Button'
 
+import Selector from '../Selector/Selector'
+
 import { getPokemon } from '../../api/pokemons'
+import { getData1 } from '../../api/data'
 
 class PokemonBuilder extends Component {
   constructor (props) {
@@ -11,7 +14,8 @@ class PokemonBuilder extends Component {
 
     this.state = {
       pokemon: null,
-      redirect: null
+      redirect: null,
+      speciesNames: null
     }
   }
 
@@ -22,8 +26,45 @@ class PokemonBuilder extends Component {
       .catch(console.error)
   }
 
+  simplify = str => {
+    let simpleStr = str.toLowerCase()
+    simpleStr = simpleStr.replace('.', '')
+    simpleStr = simpleStr.replace(' ', '-')
+    return simpleStr
+  }
+
+  changeSpecies = (event) => {
+    console.log('hi')
+    const newSpecies = event.target.value
+    // convert the species string to the format expected by the pokeApi
+    const simplifiedSpecies = this.simplify(newSpecies)
+    getData1(simplifiedSpecies)
+      .then(res => {
+        console.log(res)
+        this.setState((prevState) => ({
+          pokemon: {
+            ...prevState.pokemon,
+            species: newSpecies,
+            ability: res.data.abilities[0].ability.name,
+            moves: []
+          }
+        }))
+      })
+  }
+
   onBack = () => {
     this.setState({ redirect: <Redirect to={'/teams/' + this.props.match.params.team._id} /> })
+  }
+
+  handleTextChange = (event) => {
+    const name = event.target.name
+    const value = event.target.value
+
+    this.setState((prevState) => {
+      const updatedValue = { [name]: value }
+
+      return { pokemon: { ...prevState.pokemon, ...updatedValue } }
+    })
   }
 
   render () {
@@ -37,14 +78,34 @@ class PokemonBuilder extends Component {
       return null
     }
 
-    // placeholder
     return (
-      <Fragment>
-        <h3>{pokemon.nickname}</h3>
-        <h3>{pokemon.species}</h3>
-        <h3>{pokemon.ability}</h3>
-        <h3>{pokemon.moves}</h3>
-      </Fragment>
+      <div className="container border-std mt-2">
+        {/* top half */}
+        <div className="row col-12 justify-content-around mt-2">
+          {/* left side of top half */}
+          <div className="row col-4 align-items-between">
+            <Selector pokemon={pokemon} changeSpecies={this.changeSpecies} />
+          </div>
+          {/* middle of top half */}
+          <div className="row col-4">
+            <label className="mr-1">
+              <h6>Nickname:</h6>
+            </label>
+            <input name="nickname" value={pokemon.nickname} onChange={this.handleTextChange}>
+            </input>
+          </div>
+          {/* right side of top half */}
+          <div className="row col-4">
+          </div>
+        </div>
+        {/* bottom half */}
+        <div className="row col-12 justify-content-around">
+          <h3>Nickname: {pokemon.nickname}</h3>
+          <h3>Species: {pokemon.species}</h3>
+          <h3>Ability: {pokemon.ability}</h3>
+          <h3>Moves: {pokemon.moves}</h3>
+        </div>
+      </div>
     )
   }
 }

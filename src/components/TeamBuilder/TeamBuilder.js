@@ -42,11 +42,10 @@ class TeamBuilder extends Component {
     const pokemonsJsx = team.pokemons.map(pokemon => (
       <PokemonPreview key={pokemon._id} user={this.props.user} team={team} pokemon={pokemon} />
     ))
-    console.log(pokemonsJsx)
+
     for (let i = team.pokemons.length; i < 6; i++) {
       pokemonsJsx.push(<PokemonPreview key={i} user={this.props.user} pokemon={null} />)
     }
-    console.log(pokemonsJsx)
 
     return (
       <div className="container">
