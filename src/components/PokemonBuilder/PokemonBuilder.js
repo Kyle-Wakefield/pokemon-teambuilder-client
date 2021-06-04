@@ -26,6 +26,19 @@ class PokemonBuilder extends Component {
       .catch(console.error)
   }
 
+  format = str => {
+    let formattedStr = str.charAt(0).toUpperCase() + str.slice(1)
+    for (let i = 0; i < str.length; i++) {
+      if (formattedStr.charAt(i) === '-') {
+        formattedStr = formattedStr.slice(0, i) + ' ' + formattedStr.slice(i + 1)
+      }
+      if (formattedStr.charAt(i) === ' ') {
+        formattedStr = formattedStr.slice(0, i + 1) + str.charAt(i + 1).toUpperCase() + formattedStr.slice(i + 2)
+      }
+    }
+    return formattedStr
+  }
+
   simplify = str => {
     let simpleStr = str.toLowerCase()
     simpleStr = simpleStr.replace('.', '')
@@ -45,7 +58,7 @@ class PokemonBuilder extends Component {
           pokemon: {
             ...prevState.pokemon,
             species: newSpecies,
-            ability: res.data.abilities[0].ability.name,
+            ability: this.format(res.data.abilities[0].ability.name),
             moves: []
           }
         }))
