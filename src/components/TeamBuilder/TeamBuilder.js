@@ -17,6 +17,17 @@ class TeamBuilder extends Component {
     }
   }
 
+  handleTextChange = (event) => {
+    const name = event.target.name
+    const value = event.target.value
+
+    this.setState((prevState) => {
+      const updatedValue = { [name]: value }
+
+      return { team: { ...prevState.team, ...updatedValue } }
+    })
+  }
+
   componentDidMount () {
     const { user, match } = this.props
     getTeam(user, match.params.id)
@@ -53,7 +64,10 @@ class TeamBuilder extends Component {
           <Button variant="secondary" onClick={this.onBack}>
             Back To Teams
           </Button>
-          <h2 className="mx-auto">Team Name: {team.title}</h2>
+          <div className="mx-auto">
+            <h2>Team Name: </h2>
+            <input name="title" value={team.title} onChange={this.handleTextChange}></input>
+          </div>
         </div>
         <div className="row justify-content-between">
           {pokemonsJsx}
