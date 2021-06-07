@@ -8,46 +8,89 @@ class Selector extends Component {
 
     this.state = {
       pokemon: this.props.pokemon,
-      speciesNames: null
+      choices: null
     }
   }
 
   componentDidMount () {
-    getNames('')
-      .then(res => this.setState({ speciesNames: res.data.names }))
-      .catch(console.error)
+    console.log(this.props)
+    const { type, moves } = this.props
+
+    if (type === 'species') {
+      getNames('')
+        .then(res => this.setState({ choices: res.data.names }))
+        .catch(console.error)
+    } else if (type === 'move') {
+      this.setState({
+        choices: moves
+      })
+    }
   }
 
-  handleTextChange = (event) => {
-    const name = event.target.name
-    const value = event.target.value
-
-    this.setState((prevState) => {
-      const updatedValue = { [name]: value }
-
-      return { pokemon: { ...prevState.pokemon, ...updatedValue } }
-    })
+  format = str => {
+    let formattedStr = str.charAt(0).toUpperCase() + str.slice(1)
+    for (let i = 0; i < str.length; i++) {
+      if (formattedStr.charAt(i) === '-') {
+        formattedStr = formattedStr.slice(0, i) + ' ' + formattedStr.slice(i + 1)
+      }
+      if (formattedStr.charAt(i) === ' ') {
+        formattedStr = formattedStr.slice(0, i + 1) + str.charAt(i + 1).toUpperCase() + formattedStr.slice(i + 2)
+      }
+    }
+    return formattedStr
   }
+
+  simplify = str => {
+    let simpleStr = str.toLowerCase()
+    simpleStr = simpleStr.replace('.', '')
+    simpleStr = simpleStr.replace(' ', '-')
+    return simpleStr
+  }
+
+  // handleTextChange = (event) => {
+  //   const name = event.target.name
+  //   const value = event.target.value
+  //
+  //   this.setState((prevState) => {
+  //     const updatedValue = { [name]: value }
+  //
+  //     return { pokemon: { ...prevState.pokemon, ...updatedValue } }
+  //   })
+  // }
 
   render () {
-    const { pokemon, speciesNames } = this.state
+    const { type, num } = this.props
+    const { pokemon, choices } = this.state
 
-    if (!speciesNames) {
+    if (!choices) {
       return null
     }
 
-    const speciesJsx = speciesNames.map(name => <option key={name} value={name}>{name}</option>)
-    console.log(this.props)
-    return (
-      <Fragment>
-        <label className="mr-1">
-          <h6>Species:</h6>
-        </label>
-        <select name="species" defaultValue={pokemon.species} onChange={this.props.changeSpecies}>
-          {speciesJsx}
-        </select>
-      </Fragment>
-    )
+    const choicesJsx = choices.map(choice => <option key={choice} value={choice}>{choice}</option>)
+
+    if (type === 'species') {
+      return (
+        <Fragment>
+          <label className="mr-1">
+            <h5>Species:</h5>
+          </label>
+          <select name="species" defaultValue={pokemon.species} onChange={this.props.changeSpecies}>
+            {choicesJsx}
+          </select>
+        </Fragment>
+      )
+    } else if (type === 'move') {
+      return (
+        <Fragment>
+          <label className="mr-1">
+            <h5>Move {num + 1}:</h5>
+          </label>
+          <select data-number={num} defaultValue={pokemon.moves[num]} onChange={this.props.changeMove}>
+            {choicesJsx}
+          </select>
+        </Fragment>
+      )
+    }
   }
 }
 

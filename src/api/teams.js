@@ -2,7 +2,6 @@ import { apiUrl } from '../apiConfig'
 import axios from 'axios'
 
 export const getTeams = user => {
-  // console.log('user', user)
   return axios({
     method: 'GET',
     url: apiUrl + '/teams',
@@ -44,6 +43,19 @@ export const deleteTeam = (user, team) => {
     url: apiUrl + '/teams/' + team._id,
     headers: {
       'Authorization': `Bearer ${user.token}`
+    }
+  })
+}
+
+export const updateTeam = (user, team) => {
+  return axios({
+    method: 'PATCH',
+    url: apiUrl + '/teams/' + team._id,
+    headers: {
+      'Authorization': `Bearer ${user.token}`
+    },
+    data: {
+      team: team
     }
   })
 }

@@ -11,9 +11,16 @@ export const getNames = inputString => {
   })
 }
 
-export const getData1 = species => {
+export const getDataPrimary = species => {
   return axios({
     method: 'GET',
     url: pokeApiUrl + '/pokemon/' + species
+  })
+}
+
+export const getDataSecondary = species => {
+  return axios({
+    method: 'GET',
+    url: pokeApiUrl + '/pokemon-species/' + species
   })
 }

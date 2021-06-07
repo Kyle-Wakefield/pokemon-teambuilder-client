@@ -5,7 +5,7 @@ import Button from 'react-bootstrap/Button'
 
 import PokemonPreview from '../PokemonPreview/PokemonPreview'
 
-import { getTeam } from '../../api/teams'
+import { getTeam, updateTeam } from '../../api/teams'
 
 class TeamBuilder extends Component {
   constructor (props) {
@@ -15,6 +15,13 @@ class TeamBuilder extends Component {
       team: null,
       redirect: null
     }
+  }
+
+  teamWasChanged = () => {
+    const { user, match } = this.props
+    getTeam(user, match.params.id)
+      .then(res => this.setState({ team: res.data.team }))
+      .catch(console.error)
   }
 
   handleTextChange = (event) => {
@@ -36,7 +43,10 @@ class TeamBuilder extends Component {
   }
 
   onBack = () => {
-    this.setState({ redirect: <Redirect to="/" /> })
+    const { team } = this.state
+    const { user } = this.props
+    updateTeam(user, team)
+      .then(() => this.setState({ redirect: <Redirect to="/" /> }))
   }
 
   render () {
@@ -51,11 +61,11 @@ class TeamBuilder extends Component {
     }
 
     const pokemonsJsx = team.pokemons.map(pokemon => (
-      <PokemonPreview key={pokemon._id} user={this.props.user} team={team} pokemon={pokemon} />
+      <PokemonPreview key={pokemon._id} user={this.props.user} team={team} pokemon={pokemon} teamWasChanged={this.teamWasChanged} />
     ))
 
     for (let i = team.pokemons.length; i < 6; i++) {
-      pokemonsJsx.push(<PokemonPreview key={i} user={this.props.user} pokemon={null} />)
+      pokemonsJsx.push(<PokemonPreview key={i} user={this.props.user} team={team} pokemon={null} />)
     }
 
     return (
