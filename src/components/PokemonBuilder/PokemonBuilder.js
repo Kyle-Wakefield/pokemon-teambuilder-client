@@ -17,7 +17,8 @@ class PokemonBuilder extends Component {
       redirect: null,
       speciesNames: null,
       abilityNames: null,
-      moveNames: null
+      moveNames: null,
+      counter: 0
     }
   }
 
@@ -127,7 +128,8 @@ class PokemonBuilder extends Component {
                                   pokemon: {
                                     ...prevState.pokemon,
                                     moves: [possibleMoves[0], possibleMoves[1], possibleMoves[2], possibleMoves[3]]
-                                  }
+                                  },
+                                  counter: prevState.counter + 1
                                 }))
                               }
                             })
@@ -139,7 +141,8 @@ class PokemonBuilder extends Component {
                               pokemon: {
                                 ...prevState.pokemon,
                                 moves: [possibleMoves[0], possibleMoves[1], possibleMoves[2], possibleMoves[3]]
-                              }
+                              },
+                              counter: prevState.counter + 1
                             }))
                           }
                         })
@@ -153,7 +156,8 @@ class PokemonBuilder extends Component {
                     pokemon: {
                       ...prevState.pokemon,
                       moves: [possibleMoves[0], possibleMoves[1], possibleMoves[2], possibleMoves[3]]
-                    }
+                    },
+                    counter: prevState.counter + 1
                   }))
                 }
               })
@@ -165,13 +169,14 @@ class PokemonBuilder extends Component {
   changeSpecies = event => {
     const newSpecies = event.target.value
     this.getAbilities(newSpecies, true)
-    this.getMoves(true)
     this.setState((prevState) => ({
       pokemon: {
         ...prevState.pokemon,
         species: newSpecies
       }
-    }), () => this.forceUpdate())
+    }), () => {
+      this.getMoves(true)
+    })
   }
 
   changeMove = event => {
@@ -212,7 +217,7 @@ class PokemonBuilder extends Component {
   }
 
   render () {
-    const { pokemon, redirect, abilityNames, moveNames } = this.state
+    const { pokemon, redirect, abilityNames, moveNames, counter } = this.state
 
     if (redirect) {
       return redirect
@@ -256,12 +261,11 @@ class PokemonBuilder extends Component {
           </div>
         </div>
         {/* third row */}
-        {console.log(pokemon)}
         <div className="row col-12 justify-content-around">
-          <Selector type="move" num={0} moves={moveNames} pokemon={pokemon} changeMove={this.changeMove} />
-          <Selector type="move" num={1} moves={moveNames} pokemon={pokemon} changeMove={this.changeMove} />
-          <Selector type="move" num={2} moves={moveNames} pokemon={pokemon} changeMove={this.changeMove} />
-          <Selector type="move" num={3} moves={moveNames} pokemon={pokemon} changeMove={this.changeMove} />
+          <Selector type="move" num={0} key={'zero' + counter} moves={moveNames} pokemon={pokemon} changeMove={this.changeMove} />
+          <Selector type="move" num={1} key={'one' + counter} moves={moveNames} pokemon={pokemon} changeMove={this.changeMove} />
+          <Selector type="move" num={2} key={'two' + counter} moves={moveNames} pokemon={pokemon} changeMove={this.changeMove} />
+          <Selector type="move" num={3} key={'three' + counter} moves={moveNames} pokemon={pokemon} changeMove={this.changeMove} />
         </div>
         {/*
         <div className="row col-12 justify-content-around">

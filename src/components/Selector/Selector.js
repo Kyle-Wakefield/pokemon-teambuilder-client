@@ -13,7 +13,6 @@ class Selector extends Component {
   }
 
   componentDidMount () {
-    console.log(this.props)
     const { type, moves } = this.props
 
     if (type === 'species') {
@@ -25,6 +24,10 @@ class Selector extends Component {
         choices: moves
       })
     }
+  }
+
+  selectSpecies = event => {
+    this.props.changeSpecies(event)
   }
 
   format = str => {
@@ -74,7 +77,7 @@ class Selector extends Component {
           <label className="mr-1">
             <h5>Species:</h5>
           </label>
-          <select name="species" defaultValue={pokemon.species} onChange={this.props.changeSpecies}>
+          <select name="species" defaultValue={pokemon.species} onChange={this.selectSpecies}>
             {choicesJsx}
           </select>
         </Fragment>
