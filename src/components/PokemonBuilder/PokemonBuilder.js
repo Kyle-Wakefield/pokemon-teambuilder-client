@@ -25,9 +25,23 @@ class PokemonBuilder extends Component {
   componentDidMount () {
     const { user, match } = this.props
     getPokemon(user, match.params.pokemon_id)
-      .then(res => this.setState({ pokemon: res.data.pokemon }))
-      .then(() => this.getAbilities(this.state.pokemon.species, false))
-      .then(() => this.getMoves(false))
+      .then(res => {
+        this.setState({ pokemon: res.data.pokemon })
+        return res.data.pokemon.species
+      })
+      .then((species) => {
+        this.getAbilities(species)
+          .then(abilityNames => {
+            this.setState({ abilityNames })
+          })
+        return species
+      })
+      .then((species) => {
+        this.getMoves(species)
+          .then(moveNames => {
+            this.setState({ moveNames })
+          })
+      })
       .catch(console.error)
   }
 
@@ -51,132 +65,67 @@ class PokemonBuilder extends Component {
     return simpleStr
   }
 
-  getAbilities = (species, doAbilityReset) => {
-    // convert the species string to the format expected by the pokeApi
-    const simplifiedSpecies = this.simplify(species)
-    getDataPrimary(simplifiedSpecies)
-      .then(res => {
-        const abilities = []
-        res.data.abilities.forEach(ability => {
-          abilities.push(this.format(ability.ability.name))
-        })
-        this.setState({
-          abilityNames: abilities
-        })
-      })
-      .then(() => {
-        if (doAbilityReset) {
-          this.setState((prevState) => ({
-            pokemon: {
-              ...prevState.pokemon,
-              ability: this.state.abilityNames[0]
-            }
-          }))
-        }
-      })
-  }
-
-  // this function is so bad it makes me want to cry
-  // it will eventually be rewritten with recursion
-  // seriously though, I think this is the worst code I've ever written
-  getMoves = (doMoveReset) => {
-    const { pokemon } = this.state
-    const possibleMoves = []
-    let evolvesFrom
+  getAbilities = async (species) => {
     // format the species name in the way that the api expects
-    const simplifiedSpecies = this.simplify(pokemon.species)
-    getDataPrimary(simplifiedSpecies)
-      .then(res => {
-        res.data.moves.forEach(move => {
-          possibleMoves.push(this.format(move.move.name))
-        })
-      })
-      .then(() => {
-        getDataSecondary(simplifiedSpecies)
-          .then(res => {
-            evolvesFrom = res.data.evolves_from_species
-          })
-          .then(() => {
-            if (evolvesFrom) {
-              getDataPrimary(evolvesFrom.name)
-                .then(res => {
-                  res.data.moves.forEach(move => {
-                    if (!possibleMoves.includes(this.format(move.move.name))) {
-                      possibleMoves.push(this.format(move.move.name))
-                    }
-                  })
-                })
-                .then(() => {
-                  getDataSecondary(evolvesFrom.name)
-                    .then(res => {
-                      evolvesFrom = res.data.evolves_from_species
-                    })
-                    .then(() => {
-                      if (evolvesFrom) {
-                        getDataPrimary(evolvesFrom.name)
-                          .then(res => {
-                            res.data.moves.forEach(move => {
-                              if (!possibleMoves.includes(this.format(move.move.name))) {
-                                possibleMoves.push(this.format(move.move.name))
-                              }
-                            })
-                          })
-                          .then(() => {
-                            this.setState({ moveNames: possibleMoves }, () => {
-                              if (doMoveReset) {
-                                this.setState((prevState) => ({
-                                  pokemon: {
-                                    ...prevState.pokemon,
-                                    moves: [possibleMoves[0], possibleMoves[1], possibleMoves[2], possibleMoves[3]]
-                                  },
-                                  counter: prevState.counter + 1
-                                }))
-                              }
-                            })
-                          })
-                      } else {
-                        this.setState({ moveNames: possibleMoves }, () => {
-                          if (doMoveReset) {
-                            this.setState((prevState) => ({
-                              pokemon: {
-                                ...prevState.pokemon,
-                                moves: [possibleMoves[0], possibleMoves[1], possibleMoves[2], possibleMoves[3]]
-                              },
-                              counter: prevState.counter + 1
-                            }))
-                          }
-                        })
-                      }
-                    })
-                })
-            } else {
-              this.setState({ moveNames: possibleMoves }, () => {
-                if (doMoveReset) {
-                  this.setState((prevState) => ({
-                    pokemon: {
-                      ...prevState.pokemon,
-                      moves: [possibleMoves[0], possibleMoves[1], possibleMoves[2], possibleMoves[3]]
-                    },
-                    counter: prevState.counter + 1
-                  }))
-                }
-              })
-            }
-          })
-      })
+    const simplifiedSpecies = this.simplify(species)
+    const abilitiesList = []
+    const res = await getDataPrimary(simplifiedSpecies)
+    res.data.abilities.forEach(ability => {
+      const abilityName = ability.ability.name
+      abilitiesList.push(this.format(abilityName))
+    })
+    return abilitiesList
   }
 
-  changeSpecies = event => {
+  getMoves = async (species) => {
+    const movesList = []
+    // format the species name in the way that the api expects
+    const simplifiedSpecies = this.simplify(species)
+
+    // we use try-catch block here in case any of our api calls throw an error
+    try {
+      // get data from pokeapi that includes move list
+      const resPrimary = await getDataPrimary(simplifiedSpecies)
+      // push all the move names into our moves array
+      resPrimary.data.moves.forEach(move => {
+        const moveName = move.move.name
+        movesList.push(this.format(moveName))
+      })
+      // get data from pokeapi that includes previous stage of evolution
+      const resSecondary = await getDataSecondary(simplifiedSpecies)
+      // extract previous stage from response
+      const evolvesFrom = resSecondary.data.evolves_from_species
+      // if there is a previous stage, recursively get its moves and add any moves that we don't already have
+      if (evolvesFrom) {
+        const prevStageMoves = await this.getMoves(evolvesFrom.name)
+        prevStageMoves.forEach(move => {
+          if (!movesList.includes(move)) {
+            movesList.push(move)
+          }
+        })
+      }
+    } catch (err) {
+      console.error(err)
+    }
+    return movesList
+  }
+
+  speciesDidChange = async event => {
     const newSpecies = event.target.value
-    this.getAbilities(newSpecies, true)
-    this.setState((prevState) => ({
+    const newAbilities = await this.getAbilities(newSpecies)
+    const newMoves = await this.getMoves(newSpecies)
+    this.setState(prevState => ({
       pokemon: {
         ...prevState.pokemon,
-        species: newSpecies
-      }
-    }), () => {
-      this.getMoves(true)
-    })
+        species: newSpecies,
+        moves: [newMoves[0], newMoves[1], newMoves[2], newMoves[3]],
+        ability: newAbilities[0],
+        nickname: newSpecies
+      },
+      abilityNames: newAbilities,
+      moveNames: newMoves,
+      counter: prevState.counter + 1
+    }))
   }
 
   changeMove = event => {
@@ -240,7 +189,7 @@ class PokemonBuilder extends Component {
         <div className="row col-12 justify-content-around mt-2">
           {/* left side of top half */}
           <div className="row col-4 align-items-between">
-            <Selector type="species" pokemon={pokemon} changeSpecies={this.changeSpecies} />
+            <Selector type="species" pokemon={pokemon} speciesDidChange={this.speciesDidChange} />
           </div>
           {/* middle of top half */}
           <div className="row col-4">

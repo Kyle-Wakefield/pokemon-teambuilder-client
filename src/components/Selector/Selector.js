@@ -27,7 +27,7 @@ class Selector extends Component {
   }
 
   selectSpecies = event => {
-    this.props.changeSpecies(event)
+    this.props.speciesDidChange(event)
   }
 
   format = str => {
