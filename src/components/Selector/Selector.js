@@ -95,9 +95,6 @@ class Selector extends Component {
           <label className="mr-1">
             <h5>Move {num + 1}:</h5>
           </label>
-          {/* <select data-number={num} defaultValue={pokemon.moves[num]} onChange={this.props.changeMove}>
-            {choicesJsx}
-          </select> */}
           <Autocomplete
             options={choices}
             style={{ width: 160 }}

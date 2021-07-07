@@ -18,6 +18,7 @@ class PokemonBuilder extends Component {
       speciesNames: null,
       abilityNames: null,
       moveNames: null,
+      spriteUrl: null,
       counter: 0
     }
   }
@@ -29,17 +30,24 @@ class PokemonBuilder extends Component {
         this.setState({ pokemon: res.data.pokemon })
         return res.data.pokemon.species
       })
-      .then((species) => {
+      .then(species => {
         this.getAbilities(species)
           .then(abilityNames => {
             this.setState({ abilityNames })
           })
         return species
       })
-      .then((species) => {
+      .then(species => {
         this.getMoves(species)
           .then(moveNames => {
             this.setState({ moveNames })
+          })
+        return species
+      })
+      .then(species => {
+        getDataPrimary(this.simplify(species))
+          .then(res => {
+            this.setState({ spriteUrl: res.data.sprites.front_default })
           })
       })
       .catch(console.error)
@@ -65,7 +73,7 @@ class PokemonBuilder extends Component {
     return simpleStr
   }
 
-  getAbilities = async (species) => {
+  getAbilities = async species => {
     // format the species name in the way that the api expects
     const simplifiedSpecies = this.simplify(species)
     const abilitiesList = []
@@ -77,7 +85,7 @@ class PokemonBuilder extends Component {
     return abilitiesList
   }
 
-  getMoves = async (species) => {
+  getMoves = async species => {
     const movesList = []
     // format the species name in the way that the api expects
     const simplifiedSpecies = this.simplify(species)
@@ -114,6 +122,8 @@ class PokemonBuilder extends Component {
     const newSpecies = event.target.innerHTML
     const newAbilities = await this.getAbilities(newSpecies)
     const newMoves = await this.getMoves(newSpecies)
+    const res = await getDataPrimary(this.simplify(newSpecies))
+    const newSprite = res.data.sprites.front_default
     this.setState(prevState => ({
       pokemon: {
         ...prevState.pokemon,
@@ -124,6 +134,7 @@ class PokemonBuilder extends Component {
       },
       abilityNames: newAbilities,
       moveNames: newMoves,
+      spriteUrl: newSprite,
       counter: prevState.counter + 1
     }))
   }
@@ -167,13 +178,13 @@ class PokemonBuilder extends Component {
   }
 
   render () {
-    const { pokemon, redirect, abilityNames, moveNames, counter } = this.state
+    const { pokemon, redirect, abilityNames, moveNames, spriteUrl, counter } = this.state
 
     if (redirect) {
       return redirect
     }
 
-    if (!pokemon || !abilityNames || !moveNames) {
+    if (!pokemon || !abilityNames || !moveNames || !spriteUrl) {
       return null
     }
 
@@ -184,34 +195,35 @@ class PokemonBuilder extends Component {
       </div>
     ))
 
+    console.log('url', spriteUrl)
     return (
       <div className="container border-std mt-2">
-        {/* first row */}
+        {/* top section */}
         <div className="row col-12 justify-content-around mt-2">
-          {/* left side of top half */}
+          {/* left top of top section */}
           <div className="row col-4 align-items-between">
             <Selector type="species" pokemon={pokemon} speciesDidChange={this.speciesDidChange} />
+            {/* left bottom of top section */}
+            <div className="row col-12">
+              <h5>Ability:</h5>
+              {abilitiesJsx}
+            </div>
           </div>
-          {/* middle of top half */}
+          {/* middle top of top section */}
           <div className="row col-4">
             <label className="mr-1">
               <h5>Nickname:</h5>
             </label>
-            <input name="nickname" value={pokemon.nickname} onChange={this.handleChange}>
+            <input name="nickname" style={{ width: 160, height: 40 }} value={pokemon.nickname} onChange={this.handleChange}>
             </input>
           </div>
-          {/* right side of top half */}
+          {/* right side of top section */}
           <div className="row col-4">
-            {/* pokemon image will go here */}
-          </div>
-          {/* second row */}
-          <div className="row col-12">
-            <h5>Ability:</h5>
-            {abilitiesJsx}
+            <img className="sprite-big" src={spriteUrl}/>
           </div>
         </div>
-        {/* third row */}
-        <div className="row col-12 justify-content-around">
+        {/* middle section */}
+        <div className="row col-12 justify-content-around align-center">
           <Selector type="move" num={0} key={'zero' + counter} moves={moveNames} pokemon={pokemon} changeMove={this.changeMove} />
           <Selector type="move" num={1} key={'one' + counter} moves={moveNames} pokemon={pokemon} changeMove={this.changeMove} />
           <Selector type="move" num={2} key={'two' + counter} moves={moveNames} pokemon={pokemon} changeMove={this.changeMove} />
@@ -225,8 +237,8 @@ class PokemonBuilder extends Component {
           <h3>Moves: {pokemon.moves[0]}, {pokemon.moves[1]}, {pokemon.moves[2]}, {pokemon.moves[3]}</h3>
         </div>
         */}
-        {/* bottom row */}
-        <div className="row col-12 justify-content-around my-2">
+        {/* bottom section */}
+        <div className="row col-12 justify-content-around align-bottom my-2">
           <Button variant="secondary" onClick={this.onBack}>Cancel</Button>
           <Button variant="secondary" onClick={this.onSave}>Save</Button>
         </div>
