@@ -1,4 +1,6 @@
 import React, { Component, Fragment } from 'react'
+import TextField from '@material-ui/core/TextField'
+import Autocomplete from '@material-ui/lab/Autocomplete'
 
 import { getNames } from '../../api/data'
 
@@ -69,7 +71,7 @@ class Selector extends Component {
       return null
     }
 
-    const choicesJsx = choices.map(choice => <option key={choice} value={choice}>{choice}</option>)
+    // const choicesJsx = choices.map(choice => <option key={choice} value={choice}>{choice}</option>)
 
     if (type === 'species') {
       return (
@@ -77,9 +79,14 @@ class Selector extends Component {
           <label className="mr-1">
             <h5>Species:</h5>
           </label>
-          <select name="species" defaultValue={pokemon.species} onChange={this.selectSpecies}>
-            {choicesJsx}
-          </select>
+          <Autocomplete
+            options={choices}
+            style={{ width: 160 }}
+            disableClearable
+            defaultValue={pokemon.species}
+            onChange={this.props.speciesDidChange}
+            renderInput={(params) => <TextField {...params} variant="outlined" />}
+          />
         </Fragment>
       )
     } else if (type === 'move') {
@@ -88,9 +95,18 @@ class Selector extends Component {
           <label className="mr-1">
             <h5>Move {num + 1}:</h5>
           </label>
-          <select data-number={num} defaultValue={pokemon.moves[num]} onChange={this.props.changeMove}>
+          {/* <select data-number={num} defaultValue={pokemon.moves[num]} onChange={this.props.changeMove}>
             {choicesJsx}
-          </select>
+          </select> */}
+          <Autocomplete
+            options={choices}
+            style={{ width: 160 }}
+            id={num.toString()}
+            disableClearable
+            defaultValue={pokemon.moves[num]}
+            onChange={this.props.changeMove}
+            renderInput={(params) => <TextField {...params} variant="outlined" />}
+          />
         </Fragment>
       )
     }

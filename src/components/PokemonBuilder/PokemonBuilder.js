@@ -111,7 +111,7 @@ class PokemonBuilder extends Component {
   }
 
   speciesDidChange = async event => {
-    const newSpecies = event.target.value
+    const newSpecies = event.target.innerHTML
     const newAbilities = await this.getAbilities(newSpecies)
     const newMoves = await this.getMoves(newSpecies)
     this.setState(prevState => ({
@@ -129,8 +129,9 @@ class PokemonBuilder extends Component {
   }
 
   changeMove = event => {
-    const newMove = event.target.value
-    const moveNum = event.target.dataset.number
+    console.log(parseInt(event.target.id.charAt(0)))
+    const newMove = event.target.innerHTML
+    const moveNum = parseInt(event.target.id.charAt(0))
     // copy the moves into a fresh array so we're not mutating the state when we splice
     const updatedMovesArray = this.state.pokemon.moves
     updatedMovesArray.splice(moveNum, 1, newMove)
